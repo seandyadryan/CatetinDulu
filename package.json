@@ -1,0 +1,8 @@
+{
+  "name": "catetin-dulu", "version": "1.0.0", "private": true,
+  "description": "Pencatatan keuangan pribadi melalui WhatsApp, n8n, Groq dan PostgreSQL",
+  "type": "module", "engines": {"node": ">=22"},
+  "scripts": {"start": "node server.js", "test": "node --test test/unit.test.js", "workflow": "node scripts/build-workflow.mjs"},
+  "dependencies": {"dotenv": "^16.6.1", "express": "^5.1.0", "pino": "^9.9.0", "qrcode": "^1.5.4", "whatsapp-web.js": "^1.34.7", "zod": "^3.25.76"},
+  "devDependencies": {"pg": "^8.16.3"}
+}

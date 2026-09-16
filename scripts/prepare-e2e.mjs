@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+const w=JSON.parse(fs.readFileSync('n8n/finance-message.json','utf8'));
+w.id='catetinDuluIntegrationTest';w.name='Catetin Dulu · Integration Test (isolated database)';
+w.settings.saveDataErrorExecution='all';w.settings.saveDataSuccessExecution='all';
+w.nodes.find(n=>n.name==='Webhook').parameters.path='finance-message-test';
+w.nodes.find(n=>n.name==='Webhook').webhookId='catetin-dulu-test';
+for(const n of w.nodes)if(n.credentials?.postgres)n.credentials.postgres={id:'catetindulu-postgres-test',name:'Catetin Dulu PostgreSQL Test'};
+const cred=JSON.parse(fs.readFileSync('secrets/n8n-credentials.json','utf8'))[0];cred.id='catetindulu-postgres-test';cred.name='Catetin Dulu PostgreSQL Test';cred.data.database='catetindulu_test';
+fs.writeFileSync('secrets/test-workflow.json',JSON.stringify(w));fs.writeFileSync('secrets/test-credentials.json',JSON.stringify([cred]));
+console.log('Isolated test workflow generated');

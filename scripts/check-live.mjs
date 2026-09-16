@@ -1,0 +1,11 @@
+import 'dotenv/config';
+import assert from 'node:assert/strict';
+import pg from 'pg';
+const site=process.env.PUBLIC_URL;
+const health=await fetch(`${site}/healthz`);assert.equal(health.status,200);console.log('HTTPS health:',await health.json());
+const denied=await fetch(`${site}/api/status`);assert.equal(denied.status,401);console.log('Admin endpoint rejects unauthenticated access');
+const r=await fetch(`${site}/api/status`,{headers:{authorization:`Bearer ${process.env.ADMIN_TOKEN}`}});assert.equal(r.status,200);const s=await r.json();console.log('WhatsApp:',s.status,'QR available:',Boolean(s.qr));
+const unauthorized=await fetch('http://127.0.0.1:25678/webhook/finance-message',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});assert.equal(unauthorized.status,403);
+const invalid=await fetch('http://127.0.0.1:25678/webhook/finance-message',{method:'POST',headers:{'content-type':'application/json','x-webhook-secret':process.env.N8N_WEBHOOK_SECRET},body:'{}'});assert.equal(invalid.status,200);assert.equal((await invalid.json()).success,false);console.log('Production webhook authentication and invalid-request contract verified');
+const db=new pg.Client({host:'127.0.0.1',port:25432,user:process.env.POSTGRES_USER,password:process.env.POSTGRES_PASSWORD,database:process.env.POSTGRES_DB});await db.connect();
+console.log('Production counts:',(await db.query('SELECT (SELECT count(*) FROM users) users, (SELECT count(*) FROM transactions) transactions')).rows[0]);await db.end();

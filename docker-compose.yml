@@ -1,0 +1,76 @@
+name: catetindulu
+services:
+  postgres:
+    image: postgres:16-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: Asia/Jakarta
+    ports: ["127.0.0.1:25432:5432"]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:-2.39.5}
+    restart: unless-stopped
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_POSTGRESDB_SCHEMA: n8n
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      N8N_HOST: localhost
+      N8N_PROTOCOL: http
+      N8N_PORT: 5678
+      N8N_SECURE_COOKIE: 'false'
+      GENERIC_TIMEZONE: Asia/Jakarta
+      TZ: Asia/Jakarta
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: 'false'
+      GROQ_MODEL: ${GROQ_MODEL}
+      N8N_DIAGNOSTICS_ENABLED: 'false'
+      N8N_PERSONALIZATION_ENABLED: 'false'
+      EXECUTIONS_DATA_PRUNE: 'true'
+      EXECUTIONS_DATA_MAX_AGE: 168
+    ports: ["127.0.0.1:25678:5678"]
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n:/import:ro
+      - ./secrets:/run/catetin-secrets:ro
+    depends_on:
+      postgres: {condition: service_healthy}
+  gateway:
+    build: .
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      WA_AUTH_PATH: /app/.wwebjs_auth
+      N8N_WEBHOOK_URL: http://n8n:5678/webhook/finance-message
+      N8N_WEBHOOK_SECRET: ${N8N_WEBHOOK_SECRET}
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      WA_ALLOWED_NUMBERS: ${WA_ALLOWED_NUMBERS:-}
+      WEBHOOK_TIMEOUT_MS: ${WEBHOOK_TIMEOUT_MS:-60000}
+    ports: ["127.0.0.1:23000:3000"]
+    volumes:
+      - whatsapp_auth:/app/.wwebjs_auth
+    shm_size: 256mb
+    depends_on: [n8n]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    stop_grace_period: 25s
+volumes:
+  postgres_data:
+  n8n_data:
+  whatsapp_auth:

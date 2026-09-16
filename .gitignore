@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.wwebjs_auth/
+.wwebjs_cache/
+secrets/
+*.log
+*.tar.gz
+coverage/

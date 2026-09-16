@@ -1,0 +1,5 @@
+import 'dotenv/config';
+import fs from 'node:fs';
+fs.mkdirSync('secrets',{recursive:true});
+fs.writeFileSync('secrets/AKSES-LOKAL.md',`# Akses privat Catetin Dulu\n\nFile ini tidak masuk GitHub. Simpan privat.\n\nWebsite: https://catetindulu.amarlo.online\n\nToken admin (salin ke form website untuk menampilkan QR):\n\n\`${process.env.ADMIN_TOKEN}\`\n\nWhatsApp → Setelan → Perangkat tertaut → Tautkan perangkat. Pindai QR lalu kirim pesan dari nomor lain ke nomor bot.\n\n## Navicat: Catetin Dulu Oracle DB\n\nHost PostgreSQL: 127.0.0.1\nPort: 25432\nDatabase: catetindulu\nUser: catetindulu\nPassword (masukkan saat pertama kali membuka koneksi):\n\n\`${process.env.POSTGRES_PASSWORD}\`\n\nSSH: ubuntu@168.110.194.144, port 22\nSSH private key: D:\\KEYSTORE\\ai-chat-vm.key\n\nRestart Navicat bila entry baru belum muncul.\n\n## Editor n8n\n\nhttp://localhost:25678 (melalui SSH tunnel). Akun pemilik belum disetel; lakukan setup saat pertama kali membuka editor.\n\nServer project: /home/ubuntu/CatetinDulu\nLocal project: D:\\GITHUB\\CatetinDulu\n`,{mode:0o600});
+console.log('Private access note saved: secrets/AKSES-LOKAL.md');

@@ -1,0 +1,7 @@
+services:
+  gateway:
+    networks: [default, existing_proxy]
+networks:
+  existing_proxy:
+    external: true
+    name: ai-chat_default
