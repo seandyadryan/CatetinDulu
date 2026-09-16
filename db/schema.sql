@@ -1,4 +1,6 @@
 -- Catetin Dulu: all monetary writes are atomic, fixed SQL; never execute model SQL.
+-- Initial legacy schema. On fresh installs run migrations/002_shared_workspaces.sql next.
+-- On existing installations use versioned migrations; do not replay this file by itself.
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE SCHEMA IF NOT EXISTS n8n;
 CREATE TABLE IF NOT EXISTS users (

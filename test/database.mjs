@@ -9,6 +9,10 @@ const db=new pg.Client({connectionString:conn});await db.connect();
 try{
  db.on('notice',n=>{if(n.severity==='WARNING')console.log(n.message);});
  await db.query(fs.readFileSync(new URL('../db/schema.sql',import.meta.url),'utf8').replace('EXCEPTION WHEN OTHERS THEN',"EXCEPTION WHEN OTHERS THEN RAISE WARNING '%', SQLERRM;"));
+ // A reused test database may already have the shared-workspace columns and constraints.
+ if ((await db.query("SELECT to_regclass('public.workspaces') AS t")).rows[0].t) {
+  await db.query(fs.readFileSync(new URL('../db/migrations/002_shared_workspaces.sql',import.meta.url),'utf8'));
+ }
  const sender=`${Date.now()}@c.us`,sender2=`${Date.now()+1}@c.us`;
  const base={intent:'expense',transaction_type:'expense',amount:35000,currency:'IDR',category:'food',description:'nasi padang',transaction_date:'2026-09-16',payment_method:null,account:null,from_account:null,to_account:null,transaction_id:null,query_period:null,query_category:null,needs_clarification:false,clarification_question:null,confidence:0.99};
  const claim=async(from=sender,id=crypto.randomUUID(),text='test')=>(await db.query('SELECT prepare_message($1) e',[{from,message_id:id,text,timestamp:1,is_group:false}])).rows[0].e;

@@ -1,6 +1,8 @@
 # Catetin Dulu
 
-Pencatatan keuangan pribadi berbahasa Indonesia lewat WhatsApp. Node.js 22, whatsapp-web.js, n8n, Groq, dan PostgreSQL 16. Data produksi dimulai kosong; tidak ada seed transaksi atau saldo buatan.
+Pencatatan keuangan pribadi, keluarga, dan tim berbahasa Indonesia lewat satu bot WhatsApp. Node.js 22, whatsapp-web.js, n8n, Groq, dan PostgreSQL 16. Data produksi dimulai kosong; tidak ada seed transaksi atau saldo buatan.
+
+Untuk mencatat bersama, kirim `/ruang buat keluarga Nama Keluarga` atau `/ruang buat tim Nama Tim`, lalu `/ruang undang`. Anggota mengirim `/ruang gabung KODE` ke nomor bot yang sama. Semua anggota mencatat dan melihat laporan ruang aktif melalui chat pribadi. Panduan perintah, hak akses, dan tabel: [Keuangan bersama](docs/KEUANGAN-BERSAMA.md).
 
 ## Arsitektur
 
@@ -46,9 +48,9 @@ Buka `http://localhost:25678`. Buat akun pemilik n8n pada akses pertama. Cookie 
 
 ## QR authentication
 
-Buka `https://catetindulu.amarlo.online`, masukkan `ADMIN_TOKEN` dari `.env` privat. Di WhatsApp nomor bot: Setelan → Perangkat tertaut → Tautkan perangkat → pindai QR. Tunggu status **WhatsApp terhubung**. Kirim pesan **dari nomor lain** ke nomor bot. Pesan sendiri, grup, status, dan media tidak diproses. Session tersimpan di volume `whatsapp_auth`; restart tidak memerlukan scan ulang selama sesi masih valid. Token hanya disimpan dalam memori halaman, bukan localStorage. QR tidak dicetak di log.
+Buka `https://catetindulu.amarlo.online`, masukkan `ADMIN_TOKEN` dari `.env` privat. Di WhatsApp nomor bot: Setelan → Perangkat tertaut → Tautkan perangkat → pindai QR. Tunggu status **WhatsApp terhubung**. Kirim pesan **dari nomor lain** ke nomor bot. Teks dan foto struk diproses; pesan sendiri, grup, status, serta media lainnya diabaikan. Session tersimpan di volume `whatsapp_auth`; restart tidak memerlukan scan ulang selama sesi masih valid. Token hanya disimpan dalam memori halaman, bukan localStorage. QR tidak dicetak di log.
 
-`WA_ALLOWED_NUMBERS` dapat diisi nomor tanpa +, dipisah koma, untuk membatasi pengguna. Kosong berarti semua pengirim chat langsung dapat menggunakan bot; tiap pengirim punya data terisolasi. WhatsApp kadang menggunakan ID `@lid`; whitelist harus sesuai ID pengirim yang digunakan WhatsApp.
+`WA_ALLOWED_NUMBERS` dapat diisi nomor tanpa +, dipisah koma, untuk membatasi pengguna. Kosong berarti semua pengirim chat langsung dapat menggunakan bot. Data pribadi terisolasi; data keluarga/tim hanya dapat diakses anggotanya. Bila whitelist diaktifkan, semua anggota juga harus diizinkan gateway. WhatsApp kadang menggunakan ID `@lid`; whitelist harus sesuai ID pengirim yang digunakan WhatsApp.
 
 ## Input / output webhook
 
@@ -97,7 +99,7 @@ node scripts/test-groq.mjs
 TEST_DATABASE_URL=postgres://user:password@localhost:25432/catetindulu_test node test/database.mjs
 ```
 
-Schema pertama otomatis dijalankan ketika volume PostgreSQL baru dibuat. Untuk pembaruan fungsi/schema, terapkan `db/schema.sql` lewat psql (idempotent CREATE/REPLACE); jangan menghapus volume produksi. Perubahan struktural berikutnya perlu migration berversi.
+Instalasi baru menjalankan `db/schema.sql` lalu `db/migrations/002_shared_workspaces.sql`. Untuk instalasi lama, buat backup dan terapkan migrasi dengan `psql -v ON_ERROR_STOP=1`; `deploy/update.sh` menggunakan migrasi tersebut. Jangan menjalankan `db/schema.sql` sendirian setelah migrasi atau menghapus volume produksi. Data lama tetap di ruang Pribadi.
 
 Backup database dengan `pg_dump -Fc`, simpan backup terenkripsi di luar server. Backup volume session WhatsApp dan kunci enkripsi n8n secara privat; jangan masukkan ke Git. Hindari `docker compose down -v` pada produksi. Masa retensi data keuangan/pesan belum otomatis dibatasi; pemilik mengelolanya sesuai kebutuhan.
 

@@ -1,5 +1,15 @@
 # Deployment verification — 16 September 2026
 
+## Shared workspaces deployment
+
+- Applied `002_shared_workspaces` atomically after a verified `pg_dump` backup at `backups/pre-update-20260916T090830Z.dump` on the server. Seven existing transactions were retained in their recorders' personal workspaces; production ledger entries reconciled with every transaction.
+- Seven offline unit tests passed. PostgreSQL integration passed in `catetindulu_shared_test`, including personal regressions, repeat migrations, shared accounts, concurrent writes, cross-workspace foreign keys, author attribution, owner/member edit permissions, scoped pending context, single-use/expired invitations, concurrent redemption, member removal during an active parser lease, and preservation of removed members' records.
+- An isolated authenticated n8n + Groq workflow successfully created a family workspace, joined a second sender, recorded expenses of Rp45.820 and Rp60.000, and returned a shared expense report of Rp105.820. No WhatsApp messages were sent by the test.
+- Test workflow `catetinDuluSharedTest` was unpublished after verification. WhatsApp status is `ready` with no QR required. Shared recording is through each member's direct chat to the same bot; WhatsApp group chats remain ignored.
+- Receipt workspace selection and attribution were exercised at the database layer. OCR itself uses the existing image parser and was not re-tested with a new real receipt during this migration.
+
+## Initial deployment checks (before shared workspaces)
+
 - Six offline unit tests passed: parser boundaries, semantic clarification, immutable edit fields, inbound filtering, webhook contract, sender queue.
 - Twelve Indonesian examples parsed using the live Groq API (model `openai/gpt-oss-120b`, selected from the account's available models).
 - Database integration tests passed in `catetindulu_test`: balanced transfers, update/delete ledger consistency, cross-user isolation, duplicate protection, pending context, filtered report, processing lease/retry, and SQL-injection-shaped descriptions treated only as data.

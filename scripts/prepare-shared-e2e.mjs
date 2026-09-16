@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+const workflow=JSON.parse(fs.readFileSync('n8n/finance-message.json','utf8'));
+workflow.id='catetinDuluSharedTest';
+workflow.name='Catetin Dulu · Shared Workspace Test (isolated database)';
+workflow.nodes.find(n=>n.name==='Webhook').parameters.path='finance-shared-test';
+workflow.nodes.find(n=>n.name==='Webhook').webhookId='catetin-dulu-shared-test';
+for(const node of workflow.nodes) if(node.credentials?.postgres) node.credentials.postgres={id:'catetindulu-postgres-shared-test',name:'Catetin Dulu PostgreSQL Shared Test'};
+const original=JSON.parse(fs.readFileSync('secrets/n8n-credentials.json','utf8')).find(c=>c.type==='postgres');
+if(!original) throw Error('PostgreSQL credential not found');
+const credential={...original,id:'catetindulu-postgres-shared-test',name:'Catetin Dulu PostgreSQL Shared Test',data:{...original.data,database:'catetindulu_shared_test'}};
+fs.writeFileSync('secrets/shared-test-workflow.json',JSON.stringify(workflow));
+fs.writeFileSync('secrets/shared-test-credentials.json',JSON.stringify([credential]));
+console.log('Shared workspace test workflow prepared for isolated database');

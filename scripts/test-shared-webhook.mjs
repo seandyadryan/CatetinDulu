@@ -1,0 +1,24 @@
+import 'dotenv/config';
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+const url=process.env.SHARED_TEST_WEBHOOK_URL||'http://127.0.0.1:25679/webhook/finance-shared-test';
+if(!new URL(url).pathname.endsWith('/finance-shared-test')) throw Error('Only the isolated shared test route is allowed');
+const prefix=String(Date.now());
+const send=async(index,text)=>{
+ const payload={from:prefix+index+'@c.us',sender_name:index===1?'Ayah Uji':'Ibu Uji',message_id:crypto.randomUUID(),text,timestamp:Math.floor(Date.now()/1000),is_group:false};
+ const response=await fetch(url,{method:'POST',headers:{'content-type':'application/json','x-webhook-secret':process.env.N8N_WEBHOOK_SECRET},body:JSON.stringify(payload),signal:AbortSignal.timeout(65000)});
+ const result=await response.json();assert.equal(response.status,200);assert.equal(result.success,true,result.reply);
+ return result.reply;
+};
+const noauth=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:'{}'});
+assert.equal(noauth.status,403);
+assert.match(await send(1,'/ruang buat keluarga Uji Bersama Webhook'),/Ruang dibuat/);
+const invite=await send(1,'/ruang undang');const token=invite.match(/\/ruang gabung ([A-F0-9]{32})/)[1];
+assert.match(await send(2,'/ruang gabung '+token),/Bergabung/);
+console.log('PASS authenticated n8n workspace creation and invitation redemption');
+const first=await send(1,'beli nasi padang di shopeefood 45.820');assert.match(first,/Rp45.820/);assert.match(first,/Uji Bersama Webhook/);assert.match(first,/Ayah Uji/);
+await new Promise(r=>setTimeout(r,15000));
+const second=await send(2,'belanja sayur 60rb');assert.match(second,/Rp60.000/);assert.match(second,/Ibu Uji/);
+await new Promise(r=>setTimeout(r,15000));
+const report=await send(2,'laporan pengeluaran bulan ini');assert.match(report,/Rp105.820/);
+console.log('PASS n8n + Groq + PostgreSQL: two members, expenses 45,820 + 60,000, shared report 105,820, recorder attribution');

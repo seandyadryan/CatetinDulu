@@ -5,6 +5,7 @@ node_modules/
 .wwebjs_auth/
 .wwebjs_cache/
 secrets/
+backups/
 *.log
 *.tar.gz
 coverage/
