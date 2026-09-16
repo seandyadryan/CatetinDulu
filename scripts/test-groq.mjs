@@ -5,6 +5,7 @@ import parser from '../src/validate-parser.cjs';
 const system=fs.readFileSync(new URL('../prompts/groq-system.txt',import.meta.url),'utf8');
 const samples=[
  ['makan 35rb','expense',35000],['tadi beli bensin 100 ribu','expense',100000],['gaji masuk 8 juta','income',8000000],
+ ['beli nasi padang di shopeefood 45.820','expense',45820],
  ['transfer 500rb dari BCA ke Gopay','transfer',500000],['pengeluaran saya hari ini berapa?','report',null],
  ['berapa pengeluaran makanan bulan ini?','report',null],['laporan bulan ini','report',null],
  ['hapus transaksi terakhir','delete_transaction',null],['ubah transaksi terakhir menjadi 50 ribu','edit_transaction',50000],

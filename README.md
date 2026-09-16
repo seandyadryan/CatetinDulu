@@ -67,6 +67,8 @@ Duplikat: `{"success":true,"reply":"Pesan ini sudah tercatat sebelumnya."}`. Err
 ## Intent dan konteks
 
 - `makan 35rb`, `beli bensin 100 ribu`, `bayar listrik 350 ribu`: expense.
+- `beli nasi padang di shopeefood 45.820`: expense Rp45.820, category food, description nasi padang via ShopeeFood. Dots are Indonesian thousand separators; a delivery platform does not imply ShopeePay.
+- Foto struk/order screenshot: kirim satu foto JPG, PNG, atau WebP (maks. 5 MB), dengan caption opsional seperti `pakai GoPay`. OCR memakai model vision Groq dan mencatat **total akhir yang dibayar** (sesudah diskon, ongkir, pajak, dan biaya). Subtotal, kembalian, harga satuan, dan nomor kartu tidak dicatat. Foto buram, terpotong, lebih dari satu struk, atau total ambigu meminta foto/nominal ulang.
 - `gaji masuk 8 juta`: income.
 - `transfer 500rb dari BCA ke GoPay`: satu transaksi, dua ledger movement; total kekayaan tetap.
 - `saldo saya`: saldo berdasarkan ledger, bisa negatif.

@@ -7,6 +7,8 @@
 - Expected test balance after income 8,000,000, internal transfer 500,000, and expense edited to 300,000: total 7,700,000. After deleting the expense: total 8,000,000; expense report 0.
 - Public HTTPS page and status endpoint tested; admin status requires authentication. WhatsApp QR produced. Sending/receiving through an actual linked WhatsApp account still requires the owner to scan QR and send a real message.
 - Production stores no seeded users/transactions. Test fixtures live only in the separate test database, with the test workflow unpublished after verification.
+- Exact live text regression `beli nasi padang di shopeefood 45.820` parsed as expense amount 45820, category food, with ShopeeFood kept as merchant context rather than an account.
+- Receipt image path validates MIME/signature/size, strips image bytes before PostgreSQL, and sends the image only to Groq's vision model. The final amount rule is documented in `prompts/receipt.txt`.
 - Navicat connection configuration created with SSH tunneling. Database connectivity tested through the same SSH endpoint; opening the Navicat UI still requires the database password from the private access note.
 
 ## Known dependency constraints

@@ -3,7 +3,7 @@ const fields=['intent','transaction_type','amount','currency','category','descri
 const intents=['expense','income','transfer','balance','report','transaction_list','edit_transaction','delete_transaction','help','unknown'];
 const categories=['food','transport','shopping','utilities','bills','health','education','entertainment','salary','business','investment','family','housing','travel','other'];
 const accounts=['Cash','BCA','Mandiri','BRI','BNI','GoPay','OVO','DANA','ShopeePay','Credit Card'];
-function validateParsed(p){
+function validateParsed(p,{receipt=false}={}){
  if(!p || Array.isArray(p) || typeof p!=='object' || Object.keys(p).length!==fields.length || fields.some(k=>!(k in p))) throw Error('Invalid output shape');
  if(!intents.includes(p.intent) || typeof p.needs_clarification!=='boolean' || typeof p.confidence!=='number' || p.confidence<0 || p.confidence>1) throw Error('Invalid intent/confidence');
  for(const k of fields.filter(k=>!['amount','needs_clarification','confidence'].includes(k))) if(p[k]!==null && (typeof p[k]!=='string' || p[k].length>500)) throw Error('Invalid string');
@@ -26,6 +26,10 @@ function validateParsed(p){
  if(['edit_transaction','delete_transaction'].includes(p.intent)&&!p.transaction_id) clarify('Sebutkan ID transaksi atau katakan "transaksi terakhir".');
  if(p.intent==='edit_transaction'&&!['amount','category','description','transaction_date','payment_method','account','from_account','to_account'].some(k=>p[k]!==null)) clarify('Apa yang ingin diubah dari transaksi tersebut?');
  if(p.needs_clarification&&!p.clarification_question) p.clarification_question='Boleh lengkapi detail transaksi Anda?';
+ if(receipt && (!['expense','unknown'].includes(p.intent) || p.confidence<0.85 || p.intent==='unknown')) {
+  p.intent='unknown';p.transaction_type=null;p.amount=null;p.transaction_id=null;
+  clarify('Struk belum terbaca jelas. Kirim foto satu struk yang lebih jelas atau tulis total pembayaran akhirnya.');
+ }
  return p;
 }
 module.exports={validateParsed};

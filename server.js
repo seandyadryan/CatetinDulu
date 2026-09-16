@@ -7,6 +7,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { incoming,callWebhook,createSenderQueue } from './src/gateway.js';
+import { attachReceipt, ReceiptError } from './src/receipt.js';
 const log=pino({redact:['req.headers.authorization','text','from','qr']});
 for(const name of ['N8N_WEBHOOK_SECRET','N8N_WEBHOOK_URL','ADMIN_TOKEN']) if(!process.env[name]) throw new Error(`${name} is required`);
 const app=express(); app.disable('x-powered-by');
@@ -35,8 +36,14 @@ client.on('message',message=>{
  const payload=incoming(message,message._data?.notifyName||'');
  if(!payload || (allowed.size && !allowed.has(payload.from.split('@')[0]))) return;
  const job=queue(payload.from,async()=>{
-   try {const body=await callWebhook(payload,{url:process.env.N8N_WEBHOOK_URL,secret:process.env.N8N_WEBHOOK_SECRET,timeout:Number(process.env.WEBHOOK_TIMEOUT_MS||60000)});await message.reply(body.reply);log.info({message_id:payload.message_id,success:body.success},'Message processed');}
-   catch(error){log.error({message_id:payload.message_id,error:error.message},'Message failed');await message.reply('Maaf, layanan sedang mengalami gangguan. Coba lagi sebentar; periksa daftar transaksi sebelum mencatat ulang.').catch(()=>{});}
+   try {
+     message.id={...(typeof message.id==='object'?message.id:{}),_serialized:payload.message_id};
+     const prepared=await attachReceipt(message,payload);
+     const body=await callWebhook(prepared,{url:process.env.N8N_WEBHOOK_URL,secret:process.env.N8N_WEBHOOK_SECRET,timeout:Number(process.env.WEBHOOK_TIMEOUT_MS||60000)});
+     await client.sendMessage(message.from,body.reply);
+     log.info({message_id:payload.message_id,message_type:payload.message_type,success:body.success},'Message processed');
+   }
+   catch(error){log.error({message_id:payload.message_id,error:error.message},'Message failed');await client.sendMessage(message.from,error instanceof ReceiptError?error.message:'Maaf, layanan sedang mengalami gangguan. Coba lagi sebentar; periksa daftar transaksi sebelum mencatat ulang.').catch(()=>{});}
  });
  active.add(job);void job.finally(()=>active.delete(job)).catch(()=>{});
 });
