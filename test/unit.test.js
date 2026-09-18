@@ -15,12 +15,13 @@ test('missing amount, transfer account, ambiguous target require clarification',
 test('valid parsing and edits retain null fields',()=>{
  assert.equal(parser.validateParsed({...base}).amount,35000);
  assert.equal(parser.validateParsed({...base,intent:'edit_transaction',transaction_id:'last',category:null,description:null,transaction_date:null}).transaction_date,null);
+ assert.equal(parser.validateParsed({...base,intent:'income',transaction_type:'income',description:'transfer masuk'},{receipt:true}).intent,'income');
 });
 test('ignore self, groups, statuses and malformed senders; accept image messages',()=>{
  const m={from:'628123@c.us',fromMe:false,type:'chat',body:'makan 35rb',timestamp:1,id:{_serialized:'id'}};
  assert.equal(incoming(m).text,'makan 35rb');
  for(const patch of [{fromMe:true},{from:'123@g.us'},{isStatus:true},{from:'attacker'}]) assert.equal(incoming({...m,...patch}),null);
- const image=incoming({...m,type:'image',body:''});assert.equal(image.message_type,'image');assert.match(image.text,/foto struk/);
+ const image=incoming({...m,type:'image',body:''});assert.equal(image.message_type,'image');assert.match(image.text,/foto/);
  assert.equal(incoming({...m,id:{id:'ABC',remote:'628123@c.us'}}).message_id,'false_628123@c.us_ABC');
  assert.equal(incoming({...m,id:'serialized-id'}).message_id,'serialized-id');
 });
@@ -29,7 +30,7 @@ test('image validation rejects spoofed/oversized files and normalizer keeps byte
  const checked=validateImage({mimetype:'image/png',data:png});assert.equal(checked.metadata.size_bytes,12);assert.equal(checked.image.data,png);
  assert.throws(()=>validateImage({mimetype:'image/jpeg',data:png}),ReceiptError);
  assert.throws(()=>validateImage({mimetype:'image/png',data:Buffer.alloc(5*1024*1024+1).toString('base64')}),ReceiptError);
- const normalized=normalizeInput({message_id:'m',from:'628123@c.us',text:'Catat pengeluaran dari foto struk ini.',timestamp:1,is_group:false,message_type:'image',image:{mime_type:'image/png',data:png},media:{size_bytes:12,sha256:'x'}});
+ const normalized=normalizeInput({message_id:'m',from:'628123@c.us',text:'Baca bukti transaksi dari foto ini.',timestamp:1,is_group:false,message_type:'image',image:{mime_type:'image/png',data:png},media:{size_bytes:12,sha256:'x'}});
  assert.equal(normalized.payload.image,undefined);assert.equal(normalized.image.data,png);
 });
 test('authenticated webhook contract',async()=>{

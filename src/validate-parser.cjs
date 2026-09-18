@@ -26,7 +26,7 @@ function validateParsed(p,{receipt=false}={}){
  if(['edit_transaction','delete_transaction'].includes(p.intent)&&!p.transaction_id) clarify('Sebutkan ID transaksi atau katakan "transaksi terakhir".');
  if(p.intent==='edit_transaction'&&!['amount','category','description','transaction_date','payment_method','account','from_account','to_account'].some(k=>p[k]!==null)) clarify('Apa yang ingin diubah dari transaksi tersebut?');
  if(p.needs_clarification&&!p.clarification_question) p.clarification_question='Boleh lengkapi detail transaksi Anda?';
- if(receipt && (!['expense','unknown'].includes(p.intent) || p.confidence<0.85 || p.intent==='unknown')) {
+ if(receipt && (!['expense','income','unknown'].includes(p.intent) || p.confidence<0.85 || p.intent==='unknown')) {
   p.intent='unknown';p.transaction_type=null;p.amount=null;p.transaction_id=null;
   clarify('Struk belum terbaca jelas. Kirim foto satu struk yang lebih jelas atau tulis total pembayaran akhirnya.');
  }

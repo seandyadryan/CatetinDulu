@@ -36,6 +36,11 @@ try{
  console.log('PASS migration/backfill and repeat migration');
  const privateTx=await run(owner,{amount:99000,description:'Private only'});
  const privateId=privateTx.e.workspace_id;
+ const scheduled=(await db.query("SELECT schedule_create($1,$2,$3,$4,$5::timestamptz,$6) AS result",[owner.from,'Ayah','628123456789','Pengingat keluarga','2099-09-20T01:30:00Z',crypto.randomUUID()])).rows[0].result;
+ assert.equal(scheduled.success,true,scheduled.reply);
+ const listed=(await db.query('SELECT schedule_list($1,$2) AS result',[owner.from,'Ayah'])).rows[0].result;
+ assert.equal(listed.items.length,1);assert.equal(listed.items[0].recipient_number,'628123456789');
+ assert.equal((await db.query('SELECT schedule_cancel($1,$2,$3::uuid) AS result',[owner.from,'Ayah',scheduled.id])).rows[0].result.success,true);
  const createMid=crypto.randomUUID();
  const made=await command(owner,'/ruang buat keluarga Keluarga Uji',createMid);
  assert.equal(await command(owner,'/ruang buat keluarga Keluarga Uji',createMid),made,'command retry must not create another workspace');

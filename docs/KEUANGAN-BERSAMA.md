@@ -26,6 +26,10 @@ Contoh: Ayah mencatat Rp45.820 dan Ibu mencatat Rp60.000 di ruang yang sama. Lap
 
 Hanya satu ruang aktif per orang. Semua teks dan foto struk masuk ke ruang itu sampai orang tersebut berpindah. Konfirmasi selalu menampilkan nama ruang. Setelah berpindah, pertanyaan transaksi yang belum selesai dibatalkan untuk mencegah pencatatan di ruang yang salah.
 
+Untuk mengirim pesan WhatsApp terjadwal ke nomor tertentu, kirim ke bot: `/jadwal 2026-09-20 08:30 628123456789 Jangan lupa bayar listrik`. Gunakan `/jadwal daftar` untuk melihat jadwal aktif dan `/jadwal batal ID_JADWAL` untuk membatalkan. Waktu memakai WIB, nomor harus format internasional, dan gateway akan mencoba ulang maksimal tiga kali bila nomor tujuan sedang tidak tersedia. Jadwal berada di ruang aktif sehingga pemilik ruang dapat membatalkan jadwal anggota.
+
+Untuk mengganti nomor WhatsApp bot, hentikan gateway tanpa menghapus database: `docker compose stop gateway`. Cadangkan volume `whatsapp_auth`, hapus isi sesi WhatsApp pada volume tersebut, lalu jalankan `docker compose up -d gateway`. Buka halaman koneksi dan pindai QR dengan nomor baru. Jangan gunakan `docker compose down -v` karena itu juga menghapus volume database dan n8n.
+
 Semua anggota melihat saldo, laporan, daftar transaksi, dan pencatat. Anggota hanya boleh mengubah atau menghapus catatan sendiri. Pemilik dapat mengubah atau menghapus catatan anggota dengan ID transaksi. `transaksi terakhir` selalu berarti **transaksi terakhir milik pengirim di ruang aktif**, termasuk untuk pemilik. Keluar atau dikeluarkan tidak menghapus catatan lama.
 
 Akun **Cash, BCA, GoPay, dan seterusnya adalah saldo bersama dalam ruang**. Saldo ini bukan saldo rekening masing-masing anggota. Fitur ini belum membagi tagihan atau menghitung utang antaranggota. Gunakan ruang pribadi untuk rekening pribadi. Pemasukan saldo awal dan transfer antarakun didukung seperti sebelumnya.

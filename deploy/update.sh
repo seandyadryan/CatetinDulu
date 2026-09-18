@@ -12,6 +12,7 @@ backup="backups/pre-update-$(date -u +%Y%m%dT%H%M%SZ).dump"
 test -s "$backup"
 "${dc[@]}" exec -T postgres pg_restore -l < "$backup" >/dev/null
 "${dc[@]}" exec -T postgres psql -U catetindulu -d catetindulu -v ON_ERROR_STOP=1 < db/migrations/002_shared_workspaces.sql
+"${dc[@]}" exec -T postgres psql -U catetindulu -d catetindulu -v ON_ERROR_STOP=1 < db/migrations/003_scheduled_messages.sql
 "${dc[@]}" run --rm n8n import:workflow --input=/import/finance-message.json
 "${dc[@]}" run --rm n8n publish:workflow --id=catetinDuluFinance
 "${dc[@]}" up -d

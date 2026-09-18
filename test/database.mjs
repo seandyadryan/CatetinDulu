@@ -12,6 +12,7 @@ try{
  // A reused test database may already have the shared-workspace columns and constraints.
  if ((await db.query("SELECT to_regclass('public.workspaces') AS t")).rows[0].t) {
   await db.query(fs.readFileSync(new URL('../db/migrations/002_shared_workspaces.sql',import.meta.url),'utf8'));
+  await db.query(fs.readFileSync(new URL('../db/migrations/003_scheduled_messages.sql',import.meta.url),'utf8'));
  }
  const sender=`${Date.now()}@c.us`,sender2=`${Date.now()+1}@c.us`;
  const base={intent:'expense',transaction_type:'expense',amount:35000,currency:'IDR',category:'food',description:'nasi padang',transaction_date:'2026-09-16',payment_method:null,account:null,from_account:null,to_account:null,transaction_id:null,query_period:null,query_category:null,needs_clarification:false,clarification_question:null,confidence:0.99};

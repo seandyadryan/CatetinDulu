@@ -13,7 +13,7 @@ export function incoming(message, senderName = '') {
   if (!/^\d+@(c\.us|lid)$/.test(message.from) || (message.type==='chat'&&!text) || text.length>2000) return null;
   const id=messageId(message),timestamp=Number(message.timestamp);
   if(!id || id.length>250 || !Number.isSafeInteger(timestamp) || timestamp<=0) return null;
-  return {message_id:id,from:message.from,sender_name:String(senderName||'').slice(0,100),text:text||(message.type==='image'?'Catat pengeluaran dari foto struk ini.':''),timestamp,is_group:false,message_type:message.type==='image'?'image':'text'};
+  return {message_id:id,from:message.from,sender_name:String(senderName||'').slice(0,100),text:text||(message.type==='image'?'Baca bukti transaksi dari foto ini; tentukan pemasukan atau pengeluaran dari arah transaksi.':''),timestamp,is_group:false,message_type:message.type==='image'?'image':'text'};
 }
 export async function callWebhook(payload, {url,secret,timeout=60000,fetchImpl=fetch}) {
   for (let attempt=0; attempt<3; attempt++) {
